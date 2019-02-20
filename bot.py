@@ -4,7 +4,7 @@ from time import time
 
 token_file = open('token.txt', 'r')
 token = token_file.readline()[:-1]
-client = discord.Client(status="Sugooooi")
+client = discord.Client()
 
 @client.event
 async def on_ready():
