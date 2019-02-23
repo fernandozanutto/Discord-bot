@@ -34,3 +34,19 @@ def insert(id_usuario, id_jogo, data_inicio, data_fim, nome_jogo):
     print()
     cursor.execute("SELECT * FROM jogos")
     print(cursor.fetchall())
+
+def leaderboard(usuarios: list):
+
+    sql = """
+    SELECT usuario, nome, data_inicio, data_fim FROM usuarios_jogos
+    LEFT JOIN jogos ON jogos.id_jogo = usuarios_jogos.jogo
+    WHERE usuario IN ({})
+    """.format(("?, " * len(usuarios))[:-2])
+    print(sql)
+    cursor.execute(sql, usuarios)
+
+    resultado = cursor.fetchall()
+
+    print(resultado)
+
+    return resultado

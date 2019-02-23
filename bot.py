@@ -25,7 +25,31 @@ async def on_ready():
 async def teste(ctx):
     await ctx.send("Yee, estou funcionando")
 
+@bot.command()
+async def leaderboard(ctx):
+    #quem mais jogou no total
 
+    resultado = db.leaderboard([member.id for member in ctx.guild.members])
+
+    tempos = {member.id: 0 for member in ctx.guild.members}
+
+    for registro in resultado:
+        id_usuario, jogo, inicio, fim = registro
+
+        datetime_inicio = datetime.strptime(inicio, '%Y-%m-%d %H:%M:%S')
+        datetime_fim = datetime.strptime(fim, '%Y-%m-%d %H:%M:%S')
+
+        diferenca = (datetime_fim - datetime_inicio).seconds
+
+        tempos[id_usuario] += diferenca
+
+    mensagem = ""
+
+    for member in ctx.guild.members:
+        if not member.bot:
+            mensagem += "\n{0.mention} jogou por {1} minutos".format(member, tempos[member.id]/60)
+
+    await ctx.send(mensagem)
 
 @bot.event
 async def on_message(message):
@@ -54,7 +78,6 @@ async def on_member_update(before, after):
                 diferenca = end - start
 
                 data_inicio = datetime.fromtimestamp(start)
-                #strftime('%Y-%m-%d %H:%M:%S')
                 data_fim = datetime.fromtimestamp(end)
 
                 if data_inicio.day != data_fim.day:
