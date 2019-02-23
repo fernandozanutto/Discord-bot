@@ -1,41 +1,45 @@
 import discord
-import asyncio
+from discord.ext import commands
 from time import time
 from datetime import datetime
 import db
 
 db.create_table()
 
-
 token_file = open('token.txt', 'r')
 token = token_file.readline()[:-1]
 
-client = discord.Client()
+bot = commands.Bot(command_prefix="!")
 
-@client.event
+@bot.event
 async def on_ready():
     print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
+    print(bot.user.name)
+    print(bot.user.id)
     print('------')
 
-    await client.change_presence(activity=discord.Game(name="Testando"))
+    await bot.change_presence(activity=discord.Game(name="Testando"))
 
-@client.event
+
+@bot.command()
+async def teste(ctx):
+    await ctx.send("Yee, estou funcionando")
+
+
+
+@bot.event
 async def on_message(message):
-    if message.content.startswith('!test'):
-
-        await message.channel.send('Yeee, estou funcionando')
-
-    elif not message.author.bot:
+    if not message.author.bot:
         try:
             print("resultado do eval: \n" + str(eval(message.content)))
             await message.channel.send("resultado do eval: \n" + str(eval(message.content)))
         except Exception as e:
-            print("erro no eval: " + str(message.content) + str(e))
+            print("erro no eval: " + str(message.content) + " " + str(e))
+
+    await bot.process_commands(message)
 
 
-@client.event
+@bot.event
 async def on_member_update(before, after):
 
     if before.bot:
@@ -80,8 +84,8 @@ async def on_member_update(before, after):
             except:
                     print("erro em atividade: " + activity.name)
 
-client.run(token)
 
+bot.run(token)
 
 #keep track of most played game
 #keep track of who played most time
