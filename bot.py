@@ -28,10 +28,12 @@ async def teste(ctx):
 @bot.command()
 async def leaderboard(ctx):
     #quem mais jogou no total
+    membros = [x for x in ctx.guild.members if not x.bot]
 
-    resultado = db.leaderboard([member.id for member in ctx.guild.members])
+    resultado = db.leaderboard([member.id for member in membros])
 
-    tempos = {member.id: 0 for member in ctx.guild.members}
+    tempos = {member.id: 0 for member in membros}
+    dic_membros = {member.id: member for member in membros}
 
     for registro in resultado:
         id_usuario, jogo, inicio, fim = registro
@@ -45,9 +47,8 @@ async def leaderboard(ctx):
 
     mensagem = ""
 
-    for member in ctx.guild.members:
-        if not member.bot:
-            mensagem += "\n{0.mention} jogou por {1} minutos".format(member, tempos[member.id]/60)
+    for id_usuario, tempo in sorted(tempos.items(), key=lambda x: x[1], reverse=True):
+        mensagem += "\n{0.mention} jogou por {1:.2f} minutos".format(dic_membros[id_usuario], tempo/60)
 
     await ctx.send(mensagem)
 
