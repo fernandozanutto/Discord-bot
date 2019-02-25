@@ -103,11 +103,8 @@ async def on_member_update(before, after):
                 data_fim = datetime.fromtimestamp(end)
 
                 if data_inicio.day != data_fim.day:
-                    data2 = data_inicio
-                    data2.replace(hour = 23, minute = 59, second = 59)
-
-                    data4 = data_fim
-                    data4.replace(hour = 0, minute = 0, second = 0)
+                    data2 = data_inicio.replace(hour = 23, minute = 59, second = 59)
+                    data4 = data_fim.replace(hour = 0, minute = 0, second = 0)
 
                     db.insert(before.id, activity.application_id, data_inicio.strftime('%Y-%m-%d %H:%M:%S'), data2.strftime('%Y-%m-%d %H:%M:%S'), activity.name)
                     db.insert(before.id, activity.application_id, data4.strftime('%Y-%m-%d %H:%M:%S'), data_fim.strftime('%Y-%m-%d %H:%M:%S'), activity.name)
@@ -123,8 +120,9 @@ async def on_member_update(before, after):
                 #    await before.create_dm()
                 #await before.dm_channel.send(mensagem)
 
-            except:
+            except Exception as e:
                     print("erro em atividade: " + activity.name)
+                    print(e)
 
 
 bot.run(token)
