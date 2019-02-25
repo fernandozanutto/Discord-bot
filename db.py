@@ -54,16 +54,17 @@ def leaderboard_usuarios(usuarios: list = [], data_limite: list = []):
 
     return resultado
 
-def leaderboard_jogos():
+def leaderboard_jogos(data_limite: list=['0000-00-00', '2999-12-31']):
 
     sql = """
     SELECT nome, SUM((JULIANDAY(data_fim) - JULIANDAY(data_inicio))) * 24 * 60 AS tempo
     FROM usuarios_jogos
     LEFT JOIN jogos ON jogos.id_jogo = usuarios_jogos.jogo
+    WHERE data_inicio >= "{}" AND data_fim <= "{}"
     GROUP BY nome
     ORDER BY tempo DESC
-    """
-    print(sql)
+    """.format(*data_limite)
+    #print(sql)
     cursor.execute(sql)
 
     resultado = cursor.fetchall()

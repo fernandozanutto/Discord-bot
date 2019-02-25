@@ -49,41 +49,27 @@ async def jogos(ctx, tempo: str = ""):
     """Jogos por ordem de tempo que foi jogado"""
 
     hoje = datetime.fromtimestamp(time())
-    data_inicio = ""
-    data_fim = ""
 
     if tempo == "mes":
+        data_inicio = hoje.replace(day = 1, hour = 0, minute = 0, second = 0)
+        data_fim = hoje.replace(day = monthrange(hoje.year, hoje.month)[1], hour = 23, minute = 59, second = 59)
 
-        data_inicio = hoje
-        data_inicio.day = 1
-        data_inicio.hour = 0
-        data_inicio.minute = 0
-        data_inicio.second = 0
-
-        data_fim = hoje
-        data_fim.day = monthrange(hoje.year, hoje.month)[0]
-        data_fim.hour = 23
-        data_fim.minute = 59
-        data_fim.second = 59
+        data_limite = (data_inicio.strftime('%Y-%m-%d %H:%M:%S'), data_fim.strftime('%Y-%m-%d %H:%M:%S'))
 
     elif tempo == "dia":
-        data_inicio = hoje
-        data_inicio.hour = 0
-        data_inicio.minute = 0
-        data_inicio.second = 0
+        data_inicio = hoje.replace(hour = 0, minute = 0, second = 0)
+        data_fim = hoje.replace(hour = 23, minute = 59, second = 59)
 
-        data_fim = hoje
-        data_fim.hour = 23
-        data_fim.minute = 59
-        data_fim.second = 59
+        data_limite = (data_inicio.strftime('%Y-%m-%d %H:%M:%S'), data_fim.strftime('%Y-%m-%d %H:%M:%S'))
 
-    data_limite = (data_inicio, data_fim)
+    else:
+        data_limite = None
 
-    resultado = db.leaderboard_jogos()
+    resultado = db.leaderboard_jogos(data_limite)
 
     mensagem = ""
     for registro in resultado:
-        mensagem += "\n{0[0]} jogado por {0[3]:.2f} minutos".format(registro)
+        mensagem += "\n{0[0]} jogado por {0[1]:.2f} minutos".format(registro)
 
     await ctx.send(mensagem)
 
@@ -118,14 +104,10 @@ async def on_member_update(before, after):
 
                 if data_inicio.day != data_fim.day:
                     data2 = data_inicio
-                    data2.hour = 23
-                    data2.minute = 59
-                    data2.second = 59
+                    data2.replace(hour = 23, minute = 59, second = 59)
 
                     data4 = data_fim
-                    data4.hour = 0
-                    data4.minute = 0
-                    data4.second = 0
+                    data4.replace(hour = 0, minute = 0, second = 0)
 
                     db.insert(before.id, activity.application_id, data_inicio.strftime('%Y-%m-%d %H:%M:%S'), data2.strftime('%Y-%m-%d %H:%M:%S'), activity.name)
                     db.insert(before.id, activity.application_id, data4.strftime('%Y-%m-%d %H:%M:%S'), data_fim.strftime('%Y-%m-%d %H:%M:%S'), activity.name)
@@ -133,18 +115,16 @@ async def on_member_update(before, after):
                 else:
                     db.insert(before.id, activity.application_id, data_inicio.strftime('%Y-%m-%d %H:%M:%S'), data_fim.strftime('%Y-%m-%d %H:%M:%S'), activity.name)
 
-                #if before.dm_channel is None:
-                #    await before.create_dm()
 
                 mensagem = '{} jogou {} por {:.2f} minutos'.format(before.mention, activity.name, diferenca/60)
-                #await before.dm_channel.send(mensagem)
                 await before.guild.text_channels[0].send(mensagem)
+
+                #if before.dm_channel is None:
+                #    await before.create_dm()
+                #await before.dm_channel.send(mensagem)
 
             except:
                     print("erro em atividade: " + activity.name)
 
 
 bot.run(token)
-
-#keep track of most played game
-#keep track of who played most time
