@@ -31,11 +31,11 @@ def insert(id_usuario, id_jogo, data_inicio, data_fim, nome_jogo):
 
     cursor.execute("SELECT * FROM usuarios_jogos")
     print(cursor.fetchall())
-    print()
+
     cursor.execute("SELECT * FROM jogos")
     print(cursor.fetchall())
 
-def leaderboard(usuarios: list):
+def leaderboard_usuarios(usuarios: list, data_limite: list = []):
 
     sql = """
     SELECT usuario, nome, data_inicio, data_fim FROM usuarios_jogos
@@ -48,5 +48,10 @@ def leaderboard(usuarios: list):
     resultado = cursor.fetchall()
 
     print(resultado)
+
+    return resultado
+
+def leaderboard_jogos():
+
 
     return resultado

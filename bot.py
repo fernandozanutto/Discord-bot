@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from time import time
 from datetime import datetime
+from calendar import monthrange
 import db
 
 db.create_table()
@@ -9,7 +10,7 @@ db.create_table()
 token_file = open('token.txt', 'r')
 token = token_file.readline()[:-1]
 
-bot = commands.Bot(command_prefix="!")
+bot = commands.Bot(command_prefix="!", activity=discord.Game(name="Testing"))
 
 @bot.event
 async def on_ready():
@@ -18,19 +19,18 @@ async def on_ready():
     print(bot.user.id)
     print('------')
 
-    await bot.change_presence(activity=discord.Game(name="Testando"))
-
 
 @bot.command()
 async def teste(ctx):
     await ctx.send("Yee, estou funcionando")
 
-@bot.command()
-async def leaderboard(ctx):
-    #quem mais jogou no total
+@bot.group(pass_context=True, invoke_without_command=True)
+async def leaderboard(ctx, tempo: str = ""):
+    """Membros por ordem de quem mais passou tempo jogando"""
+
     membros = [x for x in ctx.guild.members if not x.bot]
 
-    resultado = db.leaderboard([member.id for member in membros])
+    resultado = db.leaderboard_usuarios([member.id for member in membros])
 
     tempos = {member.id: 0 for member in membros}
     dic_membros = {member.id: member for member in membros}
@@ -51,6 +51,42 @@ async def leaderboard(ctx):
         mensagem += "\n{0.mention} jogou por {1:.2f} minutos".format(dic_membros[id_usuario], tempo/60)
 
     await ctx.send(mensagem)
+
+@leaderboard.command(pass_context=True)
+async def jogos(ctx):
+    """Jogos por ordem de tempo que foi jogado"""
+    """
+    hoje = datetime.fromtimestamp(time())
+    data_inicio = ""
+    data_fim = ""
+
+    if tempo == "mes":
+
+        data_inicio = hoje
+        data_inicio.day = 1
+        data_inicio.hour = 0
+        data_inicio.minute = 0
+        data_inicio.second = 0
+
+        data_fim = hoje
+        data_fim.day = monthrange(hoje.year, hoje.month)[0]
+        data_fim.hour = 23
+        data_fim.minute = 59
+        data_fim.second = 59
+
+    elif tempo == "dia":
+        data_inicio = hoje
+        data_inicio.hour = 0
+        data_inicio.minute = 0
+        data_inicio.second = 0
+
+        data_fim = hoje
+        data_fim.hour = 23
+        data_fim.minute = 59
+        data_fim.second = 59
+
+    data_limite = (data_inicio, data_fim)
+    """
 
 @bot.event
 async def on_message(message):
