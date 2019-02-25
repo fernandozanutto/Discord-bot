@@ -30,28 +30,44 @@ def insert(id_usuario, id_jogo, data_inicio, data_fim, nome_jogo):
     conn.commit()
 
     cursor.execute("SELECT * FROM usuarios_jogos")
-    print(cursor.fetchall())
+    #print(cursor.fetchall())
 
     cursor.execute("SELECT * FROM jogos")
-    print(cursor.fetchall())
+    #print(cursor.fetchall())
 
-def leaderboard_usuarios(usuarios: list, data_limite: list = []):
+def leaderboard_usuarios(usuarios: list = [], data_limite: list = []):
 
     sql = """
-    SELECT usuario, nome, data_inicio, data_fim FROM usuarios_jogos
+    SELECT usuario, SUM((JULIANDAY(data_fim) - JULIANDAY(data_inicio))) * 24 * 60 AS tempo
+    FROM usuarios_jogos
     LEFT JOIN jogos ON jogos.id_jogo = usuarios_jogos.jogo
     WHERE usuario IN ({})
+    GROUP BY usuario
+    ORDER BY TEMPO DESC
     """.format(("?, " * len(usuarios))[:-2])
-    print(sql)
+    #print(sql)
     cursor.execute(sql, usuarios)
 
     resultado = cursor.fetchall()
 
-    print(resultado)
+    #print(resultado)
 
     return resultado
 
 def leaderboard_jogos():
 
+    sql = """
+    SELECT nome, SUM((JULIANDAY(data_fim) - JULIANDAY(data_inicio))) * 24 * 60 AS tempo
+    FROM usuarios_jogos
+    LEFT JOIN jogos ON jogos.id_jogo = usuarios_jogos.jogo
+    GROUP BY nome
+    ORDER BY tempo DESC
+    """
+    print(sql)
+    cursor.execute(sql)
+
+    resultado = cursor.fetchall()
+
+    print(resultado)
 
     return resultado

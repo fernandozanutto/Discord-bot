@@ -32,30 +32,22 @@ async def leaderboard(ctx, tempo: str = ""):
 
     resultado = db.leaderboard_usuarios([member.id for member in membros])
 
-    tempos = {member.id: 0 for member in membros}
     dic_membros = {member.id: member for member in membros}
-
-    for registro in resultado:
-        id_usuario, jogo, inicio, fim = registro
-
-        datetime_inicio = datetime.strptime(inicio, '%Y-%m-%d %H:%M:%S')
-        datetime_fim = datetime.strptime(fim, '%Y-%m-%d %H:%M:%S')
-
-        diferenca = (datetime_fim - datetime_inicio).seconds
-
-        tempos[id_usuario] += diferenca
 
     mensagem = ""
 
-    for id_usuario, tempo in sorted(tempos.items(), key=lambda x: x[1], reverse=True):
-        mensagem += "\n{0.mention} jogou por {1:.2f} minutos".format(dic_membros[id_usuario], tempo/60)
+    for registro in resultado:
+        mensagem += "\n{0.mention} jogou por {1:.2f} minutos".format(dic_membros.pop(registro[0]), registro[1])
+
+    for k,v in dic_membros.items():
+        mensagem += "\n{0.mention} jogou por 0 minutos".format(v)
 
     await ctx.send(mensagem)
 
 @leaderboard.command(pass_context=True)
-async def jogos(ctx):
+async def jogos(ctx, tempo: str = ""):
     """Jogos por ordem de tempo que foi jogado"""
-    """
+
     hoje = datetime.fromtimestamp(time())
     data_inicio = ""
     data_fim = ""
@@ -86,7 +78,14 @@ async def jogos(ctx):
         data_fim.second = 59
 
     data_limite = (data_inicio, data_fim)
-    """
+
+    resultado = db.leaderboard_jogos()
+
+    mensagem = ""
+    for registro in resultado:
+        mensagem += "\n{0[0]} jogado por {0[3]:.2f} minutos".format(registro)
+
+    await ctx.send(mensagem)
 
 @bot.event
 async def on_message(message):
