@@ -20,6 +20,25 @@ async def on_ready():
     print('------')
 
 
+def formatar_data_limite(tempo: str):
+    data_limite = None
+    hoje = datetime.fromtimestamp(time())
+
+    if tempo == "mes":
+        data_inicio = hoje.replace(day = 1, hour = 0, minute = 0, second = 0)
+        data_fim = hoje.replace(day = monthrange(hoje.year, hoje.month)[1], hour = 23, minute = 59, second = 59)
+
+        data_limite = (data_inicio.strftime('%Y-%m-%d %H:%M:%S'), data_fim.strftime('%Y-%m-%d %H:%M:%S'))
+
+    elif tempo == "dia":
+        data_inicio = hoje.replace(hour = 0, minute = 0, second = 0)
+        data_fim = hoje.replace(hour = 23, minute = 59, second = 59)
+
+        data_limite = (data_inicio.strftime('%Y-%m-%d %H:%M:%S'), data_fim.strftime('%Y-%m-%d %H:%M:%S'))
+
+    return data_limite
+
+
 @bot.command()
 async def teste(ctx):
     await ctx.send("Yee, estou funcionando")
@@ -28,9 +47,11 @@ async def teste(ctx):
 async def leaderboard(ctx, tempo: str = ""):
     """Membros por ordem de quem mais passou tempo jogando"""
 
+    data_limite = formatar_data_limite(tempo)
+
     membros = [x for x in ctx.guild.members if not x.bot]
 
-    resultado = db.leaderboard_usuarios([member.id for member in membros])
+    resultado = db.leaderboard_usuarios([member.id for member in membros], data_limite)
 
     dic_membros = {member.id: member for member in membros}
 
@@ -48,22 +69,7 @@ async def leaderboard(ctx, tempo: str = ""):
 async def jogos(ctx, tempo: str = ""):
     """Jogos por ordem de tempo que foi jogado"""
 
-    hoje = datetime.fromtimestamp(time())
-
-    if tempo == "mes":
-        data_inicio = hoje.replace(day = 1, hour = 0, minute = 0, second = 0)
-        data_fim = hoje.replace(day = monthrange(hoje.year, hoje.month)[1], hour = 23, minute = 59, second = 59)
-
-        data_limite = (data_inicio.strftime('%Y-%m-%d %H:%M:%S'), data_fim.strftime('%Y-%m-%d %H:%M:%S'))
-
-    elif tempo == "dia":
-        data_inicio = hoje.replace(hour = 0, minute = 0, second = 0)
-        data_fim = hoje.replace(hour = 23, minute = 59, second = 59)
-
-        data_limite = (data_inicio.strftime('%Y-%m-%d %H:%M:%S'), data_fim.strftime('%Y-%m-%d %H:%M:%S'))
-
-    else:
-        data_limite = None
+    data_limite = formatar_data_limite(tempo)
 
     resultado = db.leaderboard_jogos(data_limite)
 
