@@ -69,7 +69,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
             #take first item in a playlist
             data = data['entries'][0]
 
-        await ctx.send('```ini\n[Added {} to the Queue.]\n```'.format(data["title"]), delete_after=20)
+        await ctx.send("```Added {0[title]} to the queue.```".format(data), delete_after=20)
 
         if download:
             source = ytdl.prepare_filename(data)
@@ -119,7 +119,6 @@ class MusicPlayer:
 
         await self.bot.wait_until_ready()
 
-
         while not self.bot.is_closed():
             self.next.clear()
 
@@ -131,7 +130,6 @@ class MusicPlayer:
 
 
             if not isinstance(source, YTDLSource):
-
                 try:
                     source = await YTDLSource.regather_stream(source, loop=self.bot.loop)
                 except Exception as e:
@@ -143,8 +141,7 @@ class MusicPlayer:
             self.current = source
 
             self._guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
-            self.np = await self._channel.send(f'**Now Playing:** `{source.title}` requested by '
-                                               f'`{source.requester}`')
+            self.np = await self._channel.send('**Now Playing:** `{0.title}` requested by `{0.requester}`'.format(source))
 
             await self.next.wait()
 
@@ -196,8 +193,7 @@ class Music:
             except discord.HTTPException:
                 pass
         elif isinstance(error, InvalidVoiceChannel):
-            await ctx.send('Error connecting to Voice Channel. '
-                           'Please make sure you are in a valid channel or provide me with one')
+            await ctx.send("Can't connecting to Voice Channel :( \nAre you sure you are in one?")
 
         print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
@@ -212,7 +208,7 @@ class Music:
         return player
 
 
-    @commands.command(name='connect', aliases=['join'])
+    @commands.command(name='connect', aliases=['join'], hidden=True)
     async def connect_(self, ctx, *, channel: discord.VoiceChannel=None):
 
         if not channel:
