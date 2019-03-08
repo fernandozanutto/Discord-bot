@@ -9,6 +9,8 @@ from async_timeout import timeout
 from functools import partial
 from youtube_dl import YoutubeDL
 
+DOWNLOAD = True
+
 ytdl_format_options = {
     'format': 'bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
@@ -24,7 +26,7 @@ ytdl_format_options = {
 }
 
 ffmpeg_options = {
-    'before_options': '-nostdin',
+    'before_options': '-nostdin -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn'
 }
 
@@ -74,14 +76,14 @@ class YTDLSource(discord.PCMVolumeTransformer):
         else:
             return {'webpage_url': data['webpage_url'], 'requester': ctx.author, 'title': data['title']}
 
-        return cls(discord.FFmpegPCMAudio(source), data=data, requester=requester)
+        return cls(discord.FFmpegPCMAudio(source), data=data, requester=ctx.author)
 
     @classmethod
     async def regather_stream(cls, data, *, loop):
         loop = loop or asyncio.get_event_loop()
         requester = data['requester']
 
-        to_run = partial(ytdl.extract_info, url=data['webpage_url'], download=False)
+        to_run = partial(ytdl.extract_info, url=data['webpage_url'], download=DOWNLOAD)
         data = await loop.run_in_executor(None, to_run)
 
         return cls(discord.FFmpegPCMAudio(data['url']), data=data, requester=requester)
@@ -247,7 +249,7 @@ class Music:
 
         player = self.get_player(ctx)
 
-        source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop, download=False)
+        source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop, download=DOWNLOAD)
 
         await player.queue.put(source)
 

@@ -43,10 +43,6 @@ def formatar_data_limite(tempo: str):
     return data_limite
 
 
-@bot.command()
-async def teste(ctx):
-    await ctx.send("Yee, estou funcionando")
-
 @bot.group(pass_context=True, invoke_without_command=True)
 async def leaderboard(ctx, tempo: str = ""):
     """Membros por ordem de quem mais passou tempo jogando"""
