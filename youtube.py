@@ -67,7 +67,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
             #take first item in a playlist
             data = data['entries'][0]
 
-        await ctx.send(f'```ini\n[Added {data["title"]} to the Queue.]\n```', delete_after=600)
+        await ctx.send('```ini\n[Added {} to the Queue.]\n```'.format(data["title"]), delete_after=20)
 
         if download:
             source = ytdl.prepare_filename(data)
@@ -112,8 +112,6 @@ class MusicPlayer:
 
         ctx.bot.loop.create_task(self.player_loop())
 
-        print('criou task')
-
 
     async def player_loop(self):
 
@@ -148,7 +146,6 @@ class MusicPlayer:
 
             await self.next.wait()
 
-
             source.cleanup()
             self.current = None
 
@@ -160,7 +157,6 @@ class MusicPlayer:
 
     def destroy(self, guild):
         return self.bot.loop.create_task(self._cog.cleanup(guild))
-
 
 
 class Music:
@@ -179,7 +175,6 @@ class Music:
         except AttributeError:
             print('attribute error')
 
-
         try:
             del self.players[guild.id]
         except KeyError:
@@ -195,7 +190,7 @@ class Music:
 
         if isinstance(error, commands.NoPrivateMessage):
             try:
-                return await ctx.send('this command cannot be used in private message')
+                return await ctx.send('This command cannot be used in private message')
             except discord.HTTPException:
                 pass
         elif isinstance(error, InvalidVoiceChannel):
@@ -222,11 +217,9 @@ class Music:
             try:
                 channel = ctx.author.voice.channel
             except AttributeError:
-                raise InvalidVoiceChannel('No channel to join. Please provide a valid one')
-
+                raise InvalidVoiceChannel('No channel to join. Please provide a valid one!')
 
         vc = ctx.voice_client
-
 
         if vc:
             if vc.channel.id == channel.id:
@@ -242,11 +235,10 @@ class Music:
             except asyncio.TimeoutError:
                 raise VoiceConnectionError('Moving to channel {} timed out.'.format(channel))
 
-        await ctx.send("Connected to **{}**".format(channel), delete_after=20)
-
 
     @commands.command(name='play')
     async def play_(self, ctx, *, search: str):
+        """Plays a song from YouTube"""
 
         vc = ctx.voice_client
 
@@ -256,7 +248,7 @@ class Music:
         player = self.get_player(ctx)
 
         source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop, download=False)
-        print(source)
+
         await player.queue.put(source)
 
 
@@ -265,7 +257,7 @@ class Music:
         vc = ctx.voice_client
 
         if not vc or not vc.is_playing():
-            return await ctx.send('nao tem nada tocando', delete_after=20)
+            return await ctx.send('I am not currently playing anything!', delete_after=20)
         elif vc.is_paused():
             return
 
@@ -285,7 +277,7 @@ class Music:
 
     @commands.command(name='skip')
     async def skip_(self, ctx):
-        """Skip the song."""
+        """Skip the current song."""
         vc = ctx.voice_client
 
         if not vc or not vc.is_connected():
@@ -320,7 +312,7 @@ class Music:
             vc.source.volume = vol / 100
 
         player.volume = vol / 100
-        await ctx.send(f'**`{ctx.author}`**: Set the volume to **{vol}%**')
+        await ctx.send('Volume set to **{}**'.format(vol))
 
 
     @commands.command(name='queue', aliases=['q', 'playlist'])
@@ -366,10 +358,10 @@ class Music:
 
     @commands.command(name='stop')
     async def stop_(self, ctx):
-        """Stop the currently playing song and destroy the player.
+        """Stop the currently playing song.
 
         !Warning!
-            This will destroy the player assigned to your guild, also deleting any queued songs and settings.
+            This will also delete any queued songs.
         """
         vc = ctx.voice_client
 
