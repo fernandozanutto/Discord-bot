@@ -3,14 +3,18 @@ from discord.ext import commands
 from time import time
 from datetime import datetime
 from calendar import monthrange
+import youtube
 import db
 
 db.create_table()
 
 token_file = open('token.txt', 'r')
-token = token_file.readline()[:-1]
 
-bot = commands.Bot(command_prefix="!", activity=discord.Game(name="Testing"))
+TOKEN = token_file.readline()[:-1]
+PREFIX = "!"
+
+bot = commands.Bot(command_prefix=PREFIX, activity=discord.Game(name="{}help".format(PREFIX)))
+
 
 @bot.event
 async def on_ready():
@@ -81,12 +85,15 @@ async def jogos(ctx, tempo: str = ""):
 
 @bot.event
 async def on_message(message):
+
     if not message.author.bot:
         try:
-            print("resultado do eval: \n" + str(eval(message.content)))
-            await message.channel.send("resultado do eval: \n" + str(eval(message.content)))
+            pass
+            #print("resultado do eval: \n" + str(eval(message.content)))
+            #await message.channel.send("resultado do eval: \n" + str(eval(message.content)))
         except Exception as e:
-            print("erro no eval: " + str(message.content) + " " + str(e))
+            pass
+            #print("erro no eval: " + str(message.content) + " " + str(e))
 
     await bot.process_commands(message)
 
@@ -130,5 +137,5 @@ async def on_member_update(before, after):
                     print("erro em atividade: " + activity.name)
                     print(e)
 
-
-bot.run(token)
+youtube.setup(bot)
+bot.run(TOKEN)
