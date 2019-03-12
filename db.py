@@ -37,6 +37,8 @@ def insert(id_usuario, id_jogo, data_inicio, data_fim, nome_jogo):
 
 def leaderboard_usuarios(usuarios: list = [], data_limite: list = ['0000-00-00', '2999-12-31']):
 
+    if data_limite == None:
+        data_limite = ['0000-00-00', '2999-12-31']
     sql = """
     SELECT usuario, SUM((JULIANDAY(data_fim) - JULIANDAY(data_inicio))) * 24 * 60 AS tempo
     FROM usuarios_jogos
